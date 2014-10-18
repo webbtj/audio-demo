@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width user-scalable=no">
+    <title>Metronome</title>
+    <link rel="stylesheet" href="css/main.css">
+    <script src="js/AudioContextMonkeyPatch.js"></script>
+    <script src="js/LoopList.js"></script>
+    <!--<script src="js/metronome.js"></script>-->
+    <style>
+      .block-group {
+        width: 100%;
+        height: 152px;
+      }
+      .block {
+        width: 150px;
+        height: 150px;
+        float: left;
+        text-align: center;
+        line-height: 150px;
+        border: solid 1px #000;
+      }
+      .block.active {
+        background-color: #f00;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="https://github.com/cwilso/metronome" style="position: absolute; top: -5px; right: 15px;">Fork me on GitHub</a>
+    <div id="controls">
+      <div><a class="play" onclick="this.innerText = play();">play</a></div>
+      <div id="tempoBox">Tempo: <span id="showTempo">120</span>BPM <input id="tempo" type="range" min="30.0" max="160.0" step="1" value="120" style="height: 20px; width: 200px" onInput="tempo = event.target.value; document.getElementById('showTempo').innerText=tempo;"></div>
+      <div>Resolution:<select onchange="noteResolution = this.selectedIndex;"><option>16th notes<option>8th notes<option>Quarter notes</select></div>
+    </div>
+    <div class="grid">
+      <div class="block-group">
+        <div id="49" class="block">1</div>
+        <div id="50" class="block">2</div>
+        <div id="51" class="block">3</div>
+        <div id="52" class="block">4</div>
+      </div>
+      <div class="block-group">
+        <div id="81" class="block">q</div>
+        <div id="87" class="block">w</div>
+        <div id="69" class="block">e</div>
+        <div id="82" class="block">r</div>
+      </div>
+      <div class="block-group">
+        <div id="65" class="block">a</div>
+        <div id="83" class="block">s</div>
+        <div id="68" class="block">d</div>
+        <div id="70" class="block">f</div>
+      </div>
+      <div class="block-group">
+        <div id="90" class="block">z</div>
+        <div id="88" class="block">x</div>
+        <div id="67" class="block">c</div>
+        <div id="86" class="block">v</div>
+      </div>
+    </div>
+   </body>
+</html>
