@@ -1,0 +1,46 @@
+<script>
+function init() {
+    try {
+        // Fix up for prefixing
+        window.AudioContext = window.AudioContext||window.webkitAudioContext;
+        audioContext = new AudioContext();
+    }
+    catch(e) {
+        alert('Web Audio API is not supported in this browser');
+    }
+
+}
+init();
+var audioContext = new AudioContext();
+
+var oscillator = audioContext.createOscillator();
+oscillator.type = 'square';
+oscillator.frequency.value = 100; // value in hertz
+oscillator.start();
+
+var bufferSize = 4096;
+var effect = (function() {
+    var node = audioContext.createScriptProcessor(bufferSize, 1, 1);
+    node.bits = 4; // between 1 and 16
+    node.normfreq = 0.1; // between 0.0 and 1.0
+    var step = Math.pow(1/2, node.bits);
+    var phaser = 0;
+    var last = 0;
+    node.onaudioprocess = function(e) {
+        var input = e.inputBuffer.getChannelData(0);
+        var output = e.outputBuffer.getChannelData(0);
+        for (var i = 0; i < bufferSize; i++) {
+            phaser += node.normfreq;
+            if (phaser >= 1.0) {
+                phaser -= 1.0;
+                last = step * Math.floor(input[i] / step + 0.5);
+            }
+            output[i] = last;
+        }
+    };
+    return node;
+})();
+
+oscillator.connect(effect);
+effect.connect(audioContext.destination);
+</script>

@@ -235,10 +235,15 @@ function Loop(source_file, init_volume, keyCode, length, trigger_interval, loop_
 
         this.gainNode = context.createGain();
         this.buffer_source.connect(this.gainNode);
-        this.gainNode.connect(context.destination);
+
+
+        // this.gainNode.connect(context.destination);
 
         this.gainNode.gain.value = this.volume;
         // console.log(this.volume);
+
+        this.gainNode.connect(window.grains);
+        window.grains.connect(context.destination);
 
         // this.buffer_source.connect(context.destination);        // connect the source to the context's destination (the speakers)
         this.buffer_source.start(0);                            // play the source now
@@ -269,6 +274,69 @@ function init() {
         alert('Web Audio API is not supported in this browser');
     }
 
+    var oscillator = context.createOscillator();
+    oscillator.type = 'square';
+    oscillator.frequency.value = 100; // value in hertz
+    oscillator.start();
+
+    var bufferSize = 4096;
+    window.bitcrusher = (function() {
+        window.node = context.createScriptProcessor(bufferSize, 1, 1);
+        node.bits = 4; // between 1 and 16
+        node.normfreq = 0.1; // between 0.0 and 1.0
+        
+        var phaser = 0;
+        var last = 0;
+        node.onaudioprocess = function(e) {
+            var step = Math.pow(1/2, document.getElementById('bits').value);
+            var input = e.inputBuffer.getChannelData(0);
+            var output = e.outputBuffer.getChannelData(0);
+            for (var i = 0; i < bufferSize; i++) {
+                phaser += node.normfreq;
+                if (phaser >= 1.0) {
+                    phaser -= 1.0;
+                    last = step * Math.floor(input[i] / step + 0.5);
+                }
+                output[i] = last;
+            }
+        };
+        return node;
+    })();
+
+    window.grains = (function() {
+        window.node = context.createScriptProcessor(bufferSize, 1, 1);
+        // node.bits = 4; // between 1 and 16
+        // node.normfreq = 0.1; // between 0.0 and 1.0
+        
+        // var phaser = 0;
+        var last = 0;
+        var c = 0;
+        var max = 4;
+
+        node.onaudioprocess = function(e) {
+            // var step = Math.pow(1/2, document.getElementById('bits').value);
+            c = 0;
+            var input = e.inputBuffer.getChannelData(0);
+            var output = e.outputBuffer.getChannelData(0);
+            for (var i = 0; i < bufferSize; i++) {
+                // phaser += node.normfreq;
+                // if (phaser >= 1.0) {
+                //     phaser -= 1.0;
+                //     last = step * Math.floor(input[i] / step + 0.5);
+                // }
+                if(c == 0)
+                    last = input[i];
+                
+                c++;
+                if(c == max)
+                    c = 0;
+
+                output[i] = last;
+            }
+        };
+        return node;
+    })();
+
 }
 
 </script>
@@ -287,18 +355,19 @@ var list = new LoopList([
     ['./sound/1-1.wav', 0, 49, 1],
 
     ['./sound/2-4.wav', 0, 50, 4],
-    // ['./sound/3-2.wav', 0, 51, 2],
+    ['./sound/3-2.wav', 0, 51, 2],
 
-    // ['./sound/4-1.wav', 0, 52, 1],
-    // ['./sound/5-1.wav', 0, 53, 1],
+    ['./sound/4-1.wav', 0, 52, 1],
+    ['./sound/5-1.wav', 0, 53, 1],
 
-    // ['./sound/6-4.wav', 0, 54, 4],
+    ['./sound/6-4.wav', 0, 54, 4],
 
-    // ['./sound/7-1.wav', 0, 55, 1],
+    ['./sound/7-1.wav', 0, 55, 1],
 
-    // ['./sound/8-4.wav', 0, 56, 4],
+    ['./sound/8-4.wav', 0, 56, 4],
 
-    // ['./sound/9-1.wav', 0, 57, 1],
+    ['./sound/9-1.wav', 0, 57, 1],
     
 ]);
 </script>
+<input type="number" min="4" max="16" value="16" step="1" id="bits" />
